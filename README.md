@@ -77,7 +77,7 @@ All FIFO instances **must** be initialized before use:
 ```c
 m_cfifo_tCFifo fifo;
 m_cfifo_InitBuffer(&fifo);           // Initialize FIFO structure
-m_cfifo_ConfigBuffer(&fifo, buffer, buffer_size); // Assign backing buffer
+m_cfifo_ConfigBuffer(&fifo, buffer, buffer_size); // Assign backing buffer (Note: buffer will be set as full)
 m_cfifo_SetDummyByte(&fifo, 0x00);  // Optional dummy byte
 ```
 
