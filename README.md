@@ -29,7 +29,7 @@ This library is **licensed under GPLv2**.
   - Query combined usage and size (`m_cfifo_All_GetUsage`, `m_cfifo_All_GetSize`)
   - Check full/empty status across all buffers (`m_cfifo_All_IsFull`, `m_cfifo_All_IsEmpty`)
 - Thread safety:
-  - Designed for external semaphore protection (optional)
+  - It is not implemented, but functions have comments where to put the semaphore/lock (optional)
 - Circular buffer design:
   - Read/write indices wrap automatically using modulo arithmetic
 - Configurable:
