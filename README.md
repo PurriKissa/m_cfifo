@@ -185,36 +185,68 @@ Date: 2025-11-23
 ## Example Usage
 
 ```c
+#include <stdio.h>
+#include <stdint.h>
+#include <time.h>
 #include "m_cfifo.h"
 
-#define BUFFER_SIZE 16
-uint8_t buffer1[BUFFER_SIZE];
-uint8_t buffer2[BUFFER_SIZE];
+#define BUFFER_SIZE 4
+
+// Helper function to print timestamp
+void print_timestamp() {
+    time_t now = time(NULL);
+    struct tm* t = localtime(&now);
+    printf("[%02d:%02d:%02d] ", t->tm_hour, t->tm_min, t->tm_sec);
+}
 
 int main(void) {
+    // Buffers and FIFO structures
+    uint8_t buffer1[BUFFER_SIZE];
+    uint8_t buffer2[BUFFER_SIZE];
     m_cfifo_tCFifo fifo1, fifo2;
 
-    // Initialize buffers
+    // Initialize FIFOs
     m_cfifo_InitBuffer(&fifo1);
     m_cfifo_InitBuffer(&fifo2);
 
-    // Configure backing storage
+    // Configure buffers
     m_cfifo_ConfigBuffer(&fifo1, buffer1, BUFFER_SIZE);
     m_cfifo_ConfigBuffer(&fifo2, buffer2, BUFFER_SIZE);
+
+
+    // Clear buffers to make them empty before pushing
+    m_cfifo_This_Clear(&fifo1);
+    m_cfifo_This_Clear(&fifo2);
 
     // Set dummy bytes
     m_cfifo_SetDummyByte(&fifo1, 0xFF);
     m_cfifo_SetDummyByte(&fifo2, 0xFF);
 
-    // Cascade buffers
+    // Cascade FIFO1 -> FIFO2
     m_cfifo_CascadeAsNextBuffer(&fifo1, &fifo2);
 
-    // Push data
-    m_cfifo_All_Push(&fifo1, 0x42);
+    // Push 6 bytes (overflow first FIFO, goes to second)
+    for (uint8_t i = 1; i <= 6; i++) {
+        if (m_cfifo_All_Push(&fifo1, i)) {
+            print_timestamp();
+            printf("Pushed: %d\n", i);
+        }
+        else {
+            print_timestamp();
+            printf("Push failed for: %d (all buffers full)\n", i);
+        }
+    }
 
-    // Pop data
+    printf("\n");
+
+    // Pop all bytes
     uint8_t value;
-    m_cfifo_All_Pop(&fifo1, &value);
+    while (m_cfifo_All_Pop(&fifo1, &value)) {
+        print_timestamp();
+        printf("Popped: %d\n", value);
+    }
+
+    printf("\nAll FIFOs empty: %s\n", m_cfifo_All_IsEmpty(&fifo1) ? "YES" : "NO");
 
     return 0;
 }
